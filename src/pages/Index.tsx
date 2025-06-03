@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Header from "@/components/Header";
 import ChatMessage from "@/components/ChatMessage";
@@ -11,7 +10,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { UserProfile, ImpactAnalysis, EmailDraft } from "@/types/user";
 import { FinanceBillAnalyzer } from "@/services/financeBillAnalyzer";
-import { Send, Scale, Info, MessageSquare } from "lucide-react";
+import { AIChatService } from "@/services/aiChatService";
+import { EmailService } from "@/services/emailService";
+import { Send, Scale, Info, MessageSquare, RefreshCw } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface ChatMessage {
   id: string;
@@ -28,17 +30,24 @@ const Index = () => {
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleProfilingComplete = (profile: UserProfile) => {
     setUserProfile(profile);
     const analyzedImpacts = FinanceBillAnalyzer.analyzeImpact(profile);
     setImpacts(analyzedImpacts);
     const draft = FinanceBillAnalyzer.generateEmailDraft(profile, analyzedImpacts);
-    setEmailDraft(draft);
+    // Use default recipients from EmailService
+    const updatedDraft = {
+      ...draft,
+      to: EmailService.getDefaultRecipients()
+    };
+    setEmailDraft(updatedDraft);
     setCurrentStep('analysis');
   };
 
-  const handleStartChat = () => {
+  const handleStartChat = async () => {
     const welcomeMessage: ChatMessage = {
       id: '1',
       message: "Hello! I'm your AI advisor for the Finance Bill 2025. I'm here to help you understand how this legislation might affect you personally. As a morally upright Kenyan citizen, I'll guide you through your constitutional rights and help you engage with this bill constructively. How can I assist you today?",
@@ -49,8 +58,8 @@ const Index = () => {
     setCurrentStep('chat');
   };
 
-  const handleSendMessage = () => {
-    if (!currentMessage.trim()) return;
+  const handleSendMessage = async () => {
+    if (!currentMessage.trim() || isLoading) return;
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -59,38 +68,67 @@ const Index = () => {
       timestamp: new Date().toLocaleTimeString()
     };
 
-    // Simple AI response logic (in real implementation, this would be more sophisticated)
-    const aiResponse: ChatMessage = {
-      id: (Date.now() + 1).toString(),
-      message: generateAIResponse(currentMessage),
-      isUser: false,
-      timestamp: new Date().toLocaleTimeString()
-    };
-
-    setChatMessages(prev => [...prev, userMessage, aiResponse]);
+    setChatMessages(prev => [...prev, userMessage]);
     setCurrentMessage("");
+    setIsLoading(true);
+
+    try {
+      const aiResponse = await AIChatService.sendMessage(currentMessage, userProfile || undefined);
+      
+      const aiMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        message: aiResponse,
+        isUser: false,
+        timestamp: new Date().toLocaleTimeString()
+      };
+
+      setChatMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      toast({
+        title: "AI Response Error",
+        description: "Failed to get AI response. Please try again.",
+        variant: "destructive",
+      });
+      
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        message: "I apologize, but I'm having trouble connecting to the AI service right now. Please try your question again in a moment.",
+        isUser: false,
+        timestamp: new Date().toLocaleTimeString()
+      };
+
+      setChatMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const generateAIResponse = (userMessage: string): string => {
-    const message = userMessage.toLowerCase();
-    
-    if (message.includes('tax') || message.includes('vat')) {
-      return "The Finance Bill 2025 introduces several tax changes. Based on your profile, I can see specific impacts. For VAT, digital services will see an increase to 16%, which may affect your costs if you use online services regularly. Remember, Article 201 of our Constitution requires that taxation be fair and reasonable. Would you like me to explain how this specifically applies to your situation?";
+  const handleGetUpdates = async () => {
+    setIsLoading(true);
+    try {
+      const updates = await AIChatService.getFinanceBillUpdates();
+      toast({
+        title: "Finance Bill Updates",
+        description: "Latest updates have been retrieved successfully.",
+      });
+      
+      const updateMessage: ChatMessage = {
+        id: Date.now().toString(),
+        message: `Here are the latest Finance Bill 2025 updates:\n\n${updates}`,
+        isUser: false,
+        timestamp: new Date().toLocaleTimeString()
+      };
+
+      setChatMessages(prev => [...prev, updateMessage]);
+    } catch (error) {
+      toast({
+        title: "Update Error",
+        description: "Failed to get latest updates. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-    
-    if (message.includes('transport') || message.includes('fuel')) {
-      return "Transport costs will be significantly affected by the KSh 5 per liter fuel levy increase. This violates the principle of fair taxation under Article 201 if it disproportionately affects low-income citizens. You have the right under Article 37 to petition government about this. Would you like help drafting a petition or understanding your legal options?";
-    }
-    
-    if (message.includes('constitution') || message.includes('rights')) {
-      return "Your constitutional rights are protected! Article 33 guarantees your freedom of expression, Article 37 gives you the right to petition, and Article 201 requires fair taxation. Chapter Six demands integrity from our leaders. You can challenge any provision that violates these principles through legal channels. What specific aspect would you like to explore?";
-    }
-    
-    if (message.includes('business') || message.includes('entrepreneur')) {
-      return "For businesses, the Finance Bill introduces corporate tax changes and turnover tax adjustments. However, there are potential legal strategies: small business reliefs, capital allowances, and export incentives. Your constitutional right to property (Article 40) protects your business interests. Would you like me to analyze specific business loopholes or exemptions?";
-    }
-    
-    return "Thank you for your question. As your constitutional AI advisor, I'm here to help you understand the Finance Bill 2025 from a perspective of integrity and constitutional rights. Could you be more specific about what aspect of the bill you'd like to discuss? I can help with taxes, transport, property, business impacts, or your constitutional rights and legal options.";
   };
 
   const renderWelcomeScreen = () => (
@@ -182,6 +220,11 @@ const Index = () => {
             timestamp={msg.timestamp}
           />
         ))}
+        {isLoading && (
+          <div className="flex justify-center p-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-kenya-green"></div>
+          </div>
+        )}
       </div>
       
       <div className="flex gap-2 mt-4">
@@ -191,9 +234,23 @@ const Index = () => {
           placeholder="Ask about the Finance Bill..."
           onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
           className="flex-1"
+          disabled={isLoading}
         />
-        <Button onClick={handleSendMessage} className="bg-kenya-green hover:bg-kenya-green/90">
+        <Button 
+          onClick={handleSendMessage} 
+          disabled={isLoading}
+          className="bg-kenya-green hover:bg-kenya-green/90"
+        >
           <Send className="w-4 h-4" />
+        </Button>
+        <Button 
+          onClick={handleGetUpdates}
+          disabled={isLoading}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Updates
         </Button>
       </div>
       

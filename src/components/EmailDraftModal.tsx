@@ -6,8 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EmailDraft } from "@/types/user";
-import { Send, Edit } from "lucide-react";
+import { Send, Edit, Copy, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { EmailService } from "@/services/emailService";
 
 interface EmailDraftModalProps {
   isOpen: boolean;
@@ -19,29 +20,56 @@ const EmailDraftModal = ({ isOpen, onClose, emailDraft }: EmailDraftModalProps) 
   const [isEditing, setIsEditing] = useState(false);
   const [editedSubject, setEditedSubject] = useState(emailDraft.subject);
   const [editedBody, setEditedBody] = useState(emailDraft.body);
-  const [isSending, setIsSending] = useState(false);
+  const [editedRecipients, setEditedRecipients] = useState(emailDraft.to.join(', '));
   const { toast } = useToast();
 
-  const handleSend = async () => {
-    setIsSending(true);
+  const handleOpenEmailClient = async () => {
     try {
-      // Simulate email sending (in real implementation, this would call an API)
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const updatedEmailDraft = {
+        ...emailDraft,
+        to: editedRecipients.split(',').map(email => email.trim()),
+        subject: editedSubject,
+        body: editedBody
+      };
+
+      await EmailService.openEmailClient(updatedEmailDraft);
       
       toast({
-        title: "Email sent successfully!",
-        description: "Your impact analysis has been sent to the specified recipients.",
+        title: "Email client opened!",
+        description: "Your email application should now be open with the draft ready to send.",
       });
       
       onClose();
     } catch (error) {
       toast({
-        title: "Failed to send email",
-        description: "Please try again later.",
+        title: "Failed to open email client",
+        description: "Please copy the email content and paste it into your email application.",
         variant: "destructive",
       });
-    } finally {
-      setIsSending(false);
+    }
+  };
+
+  const handleCopyToClipboard = async () => {
+    try {
+      const updatedEmailDraft = {
+        ...emailDraft,
+        to: editedRecipients.split(',').map(email => email.trim()),
+        subject: editedSubject,
+        body: editedBody
+      };
+
+      await EmailService.copyEmailToClipboard(updatedEmailDraft);
+      
+      toast({
+        title: "Email copied to clipboard!",
+        description: "You can now paste this into your email application.",
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to copy email",
+        description: "Please manually copy the email content.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -50,23 +78,32 @@ const EmailDraftModal = ({ isOpen, onClose, emailDraft }: EmailDraftModalProps) 
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Send className="w-5 h-5" />
+            <Mail className="w-5 h-5" />
             Email Draft - Finance Bill Impact Analysis
           </DialogTitle>
           <DialogDescription>
-            Review and edit your personalized impact analysis email before sending
+            Review and edit your personalized impact analysis email. Use your personal email to send this to officials.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div>
             <Label htmlFor="recipients">To:</Label>
-            <Input
-              id="recipients"
-              value={emailDraft.to.join(', ')}
-              disabled
-              className="bg-gray-50"
-            />
+            {isEditing ? (
+              <Input
+                id="recipients"
+                value={editedRecipients}
+                onChange={(e) => setEditedRecipients(e.target.value)}
+                placeholder="Enter email addresses separated by commas"
+              />
+            ) : (
+              <Input
+                id="recipients"
+                value={editedRecipients}
+                disabled
+                className="bg-gray-50"
+              />
+            )}
           </div>
 
           <div>
@@ -115,15 +152,23 @@ const EmailDraftModal = ({ isOpen, onClose, emailDraft }: EmailDraftModalProps) 
             </Button>
 
             <div className="space-x-2">
+              <Button 
+                variant="outline" 
+                onClick={handleCopyToClipboard}
+                className="flex items-center gap-2"
+              >
+                <Copy className="w-4 h-4" />
+                Copy Email
+              </Button>
               <Button variant="outline" onClick={onClose}>
                 Cancel
               </Button>
               <Button 
-                onClick={handleSend} 
-                disabled={isSending}
-                className="bg-kenya-green hover:bg-kenya-green/90"
+                onClick={handleOpenEmailClient}
+                className="bg-kenya-green hover:bg-kenya-green/90 flex items-center gap-2"
               >
-                {isSending ? 'Sending...' : 'Send Email'}
+                <Send className="w-4 h-4" />
+                Open Email App
               </Button>
             </div>
           </div>
