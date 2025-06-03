@@ -125,4 +125,6 @@ This application provides information and analysis for educational and advocacy 
 
 **Empowering Kenyans to understand, engage, and shape their future—lawfully and with integrity.**
 
-[1] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/11591759/38cf9b30-8246-46bb-be7e-9d8d7357679e/THE-FINANCE-BILL-2025-Compressed-Copy-_2.pdf
+https://kenyan-finance-insights.lovable.app/
+
+Proudly built using lovable.dev AI for FREE - This is not a paid ad.
