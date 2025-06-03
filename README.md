@@ -1,73 +1,128 @@
-# Welcome to your Lovable project
+# Finance Bill 2025 Kenya AI Application
 
-## Project info
+## Overview
 
-**URL**: https://lovable.dev/projects/b3c282a6-4abc-49e3-b833-0325fbd19860
+This AI-powered application provides comprehensive, personalized insights on the Finance Bill 2025 (Kenya). It analyzes the Bill’s impact from the perspective of a morally upright Kenyan citizen, in line with the Constitution, and empowers users to understand, engage, and lawfully respond to the Bill’s provisions.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## Features
 
-**Use Lovable**
+- **Comprehensive Bill Information:**  
+  Access all relevant sections, clauses, and schedules from the Finance Bill 2025.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b3c282a6-4abc-49e3-b833-0325fbd19860) and start prompting.
+- **User Profiling:**  
+  The app asks targeted questions to understand your occupation, income, location, property status, and more.
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Personalized Impact Analysis:**  
+  Get tailored explanations of how the Bill may affect your career, food costs, transport, property, and other aspects of daily life.
 
-**Use your preferred IDE**
+- **Perspective Simulation:**  
+  Insights are provided from the viewpoint of a constitutionally grounded, morally upright Kenyan citizen.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Loophole Detection & Creative Engagement:**  
+  The AI identifies potential ambiguities, lawful engagement strategies, and ways to interact with the Bill.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Automated Email Drafting:**  
+  The app drafts a personalized email summarizing how the Bill affects you and sends it to two specified addresses.
 
-Follow these steps:
+- **Constitutional Safeguards:**  
+  All outputs are framed within the bounds of Kenyan law, integrity, and freedom of expression.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+---
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## How It Works
 
-# Step 3: Install the necessary dependencies.
-npm i
+1. **Start a Conversation:**  
+   Begin by chatting with the AI, which will introduce the Bill and your constitutional rights.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+2. **Profile Yourself:**  
+   Answer a series of questions about your background and circumstances.
 
-**Edit a file directly in GitHub**
+3. **Receive Insights:**  
+   The AI analyzes your profile and explains the Bill’s impact on your life and livelihood.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+4. **Explore Loopholes & Engagement:**  
+   Learn about any legal ambiguities, creative responses, or advocacy options.
 
-**Use GitHub Codespaces**
+5. **Draft & Send Email:**  
+   Review and approve a personalized email, which the app submits to two pre-configured recipients.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+6. **Get Resources:**  
+   Access additional tools for advocacy, petitions, or legal recourse.
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+## Personas Supported
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- Students
+- Parents
+- IT Professionals
+- Drivers/Transport Workers
+- Common Kenyans (low/middle income)
+- Rich Kenyans
+- Employed Persons
+- Retirees
+- Farmers
+- Expatriates
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/b3c282a6-4abc-49e3-b833-0325fbd19860) and click on Share -> Publish.
+## Constitutional Principles
 
-## Can I connect a custom domain to my Lovable project?
+- **Freedom of Expression:**  
+  Encourages lawful, respectful, and honest engagement with public policy.
 
-Yes, you can!
+- **Right to Information:**  
+  Ensures you understand your rights and the Bill’s implications.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- **Integrity:**  
+  All advice and analysis are grounded in Chapter Six of the Kenyan Constitution.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+---
+
+## Security & Privacy
+
+- All user data is protected in accordance with Kenyan data protection laws.
+- No information is shared without your explicit consent.
+
+---
+
+## Getting Started
+
+1. Clone or download the repository.
+2. Install dependencies as per the `requirements.txt` file.
+3. Run the application (`python app.py` or as per your framework).
+4. Access the app via your browser or designated interface.
+5. Follow the on-screen instructions to interact with the AI.
+
+---
+
+## Configuration
+
+- **Email Recipients:**  
+  Set the two recipient email addresses in the admin panel or configuration file.
+
+---
+
+## Contribution
+
+Contributions are welcome! Please fork the repository and submit a pull request with your improvements.
+
+---
+
+## License
+
+This project is licensed under the MIT License.
+
+---
+
+## Disclaimer
+
+This application provides information and analysis for educational and advocacy purposes only. It does not constitute legal advice. Always consult a qualified professional for legal matters.
+
+---
+
+**Empowering Kenyans to understand, engage, and shape their future—lawfully and with integrity.**
+
+[1] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/11591759/38cf9b30-8246-46bb-be7e-9d8d7357679e/THE-FINANCE-BILL-2025-Compressed-Copy-_2.pdf
