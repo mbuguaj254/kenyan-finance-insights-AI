@@ -103,34 +103,6 @@ const Index = () => {
     }
   };
 
-  const handleGetUpdates = async () => {
-    setIsLoading(true);
-    try {
-      const updates = await AIChatService.getFinanceBillUpdates();
-      toast({
-        title: "Finance Bill Updates",
-        description: "Latest updates have been retrieved successfully.",
-      });
-      
-      const updateMessage: ChatMessage = {
-        id: Date.now().toString(),
-        message: `Here are the latest Finance Bill 2025 updates:\n\n${updates}`,
-        isUser: false,
-        timestamp: new Date().toLocaleTimeString()
-      };
-
-      setChatMessages(prev => [...prev, updateMessage]);
-    } catch (error) {
-      toast({
-        title: "Update Error",
-        description: "Failed to get latest updates. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const renderWelcomeScreen = () => (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="text-center space-y-4">
@@ -242,15 +214,6 @@ const Index = () => {
           className="bg-kenya-green hover:bg-kenya-green/90"
         >
           <Send className="w-4 h-4" />
-        </Button>
-        <Button 
-          onClick={handleGetUpdates}
-          disabled={isLoading}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Updates
         </Button>
       </div>
       

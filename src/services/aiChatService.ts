@@ -23,19 +23,4 @@ export class AIChatService {
       throw new Error('Failed to get AI response. Please try again.');
     }
   }
-
-  static async getFinanceBillUpdates(): Promise<string> {
-    try {
-      const { data, error } = await supabase.functions.invoke('finance-bill-updates');
-
-      if (error) {
-        throw error;
-      }
-
-      return data.updates || 'No recent updates available.';
-    } catch (error) {
-      console.error('Finance Bill Updates Error:', error);
-      return 'Unable to fetch updates at this time.';
-    }
-  }
 }
