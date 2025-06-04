@@ -1,6 +1,7 @@
 
 import { cn } from "@/lib/utils";
 import { User, Bot } from "lucide-react";
+import ReactMarkdown from 'react-markdown';
 
 interface ChatMessageProps {
   message: string;
@@ -21,14 +22,32 @@ const ChatMessage = ({ message, isUser, timestamp }: ChatMessageProps) => {
       )}
       
       <div className={cn(
-        "max-w-[80%] rounded-lg px-4 py-2",
+        "max-w-[80%] rounded-lg px-4 py-3",
         isUser 
           ? "bg-kenya-red text-white ml-auto" 
           : "bg-gray-100 text-gray-900"
       )}>
-        <p className="text-sm leading-relaxed">{message}</p>
+        {isUser ? (
+          <p className="text-sm leading-relaxed whitespace-pre-wrap">{message}</p>
+        ) : (
+          <div className="text-sm leading-relaxed prose prose-sm max-w-none">
+            <ReactMarkdown
+              components={{
+                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+                strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                em: ({ children }) => <em className="italic">{children}</em>,
+                h3: ({ children }) => <h3 className="font-semibold text-base mb-1 mt-2">{children}</h3>,
+                h4: ({ children }) => <h4 className="font-medium text-sm mb-1 mt-2">{children}</h4>,
+              }}
+            >
+              {message}
+            </ReactMarkdown>
+          </div>
+        )}
         {timestamp && (
-          <p className="text-xs opacity-70 mt-1">{timestamp}</p>
+          <p className="text-xs opacity-70 mt-2">{timestamp}</p>
         )}
       </div>
       
