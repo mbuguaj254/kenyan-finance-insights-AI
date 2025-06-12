@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,6 +41,31 @@ const ProfilingForm = ({ onComplete }: ProfilingFormProps) => {
     "Construction materials"
   ];
 
+  const professionSuggestions = [
+    // Education Sector
+    "Teacher", "Student", "Lecturer", "School Administrator", "Education Officer",
+    // Healthcare
+    "Doctor", "Nurse", "Clinical Officer", "Pharmacist", "Medical Technician",
+    // Technology & Engineering  
+    "Software Developer", "IT Specialist", "Engineer", "Data Analyst", "Tech Entrepreneur",
+    // Business & Finance
+    "Accountant", "Banker", "Financial Advisor", "Business Owner", "Entrepreneur",
+    // Legal & Government
+    "Lawyer", "Government Officer", "Police Officer", "Military Personnel", "Judge",
+    // Agriculture & Environment
+    "Farmer", "Agricultural Officer", "Veterinarian", "Environmental Scientist",
+    // Transport & Logistics
+    "Driver", "Pilot", "Mechanic", "Logistics Coordinator", "Boda Boda Operator",
+    // Arts & Media
+    "Journalist", "Artist", "Musician", "Content Creator", "Media Professional",
+    // Retail & Hospitality
+    "Shop Owner", "Restaurant Owner", "Tourism Professional", "Hotel Manager",
+    // Construction & Real Estate
+    "Contractor", "Architect", "Real Estate Agent", "Construction Worker",
+    // Other
+    "Consultant", "Freelancer", "Retiree", "Unemployed", "Self-Employed"
+  ];
+
   const renderStep = () => {
     switch (step) {
       case 1:
@@ -53,8 +77,17 @@ const ProfilingForm = ({ onComplete }: ProfilingFormProps) => {
                 id="occupation"
                 value={profile.occupation || ""}
                 onChange={(e) => setProfile({...profile, occupation: e.target.value})}
-                placeholder="e.g., Teacher, Farmer, Business Owner"
+                placeholder="e.g., Teacher, Software Developer, Farmer"
+                list="professions"
               />
+              <datalist id="professions">
+                {professionSuggestions.map((profession) => (
+                  <option key={profession} value={profession} />
+                ))}
+              </datalist>
+              <p className="text-sm text-gray-500 mt-1">
+                Type or select from suggestions. AI will provide profession-specific analysis.
+              </p>
             </div>
             
             <div>
@@ -216,9 +249,9 @@ const ProfilingForm = ({ onComplete }: ProfilingFormProps) => {
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>User Profiling - Step {step} of 3</CardTitle>
+        <CardTitle>AI-Powered User Profiling - Step {step} of 3</CardTitle>
         <CardDescription>
-          Help us understand your situation to provide personalized analysis of the Finance Bill's impact
+          Help our AI understand your situation to provide dynamic, reasoned analysis of the Finance Bill's impact
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -237,7 +270,7 @@ const ProfilingForm = ({ onComplete }: ProfilingFormProps) => {
             <Button onClick={handleNext}>Next</Button>
           ) : (
             <Button onClick={handleSubmit} className="bg-kenya-green hover:bg-kenya-green/90">
-              Analyze Impact
+              Generate AI Analysis
             </Button>
           )}
         </div>

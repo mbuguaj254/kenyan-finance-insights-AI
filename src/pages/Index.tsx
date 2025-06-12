@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import Header from "@/components/Header";
 import ChatMessage from "@/components/ChatMessage";
@@ -16,6 +15,7 @@ import { AIChatService } from "@/services/aiChatService";
 import { EmailService } from "@/services/emailService";
 import { Send, Scale, Info, MessageSquare, ArrowLeft, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { DynamicAnalyzer } from "@/services/dynamicAnalyzer";
 
 interface ChatMessage {
   id: string;
@@ -42,16 +42,47 @@ const Index = () => {
     }
   }, [chatMessages]);
 
-  const handleProfilingComplete = (profile: UserProfile) => {
+  const handleProfilingComplete = async (profile: UserProfile) => {
     setUserProfile(profile);
-    const analyzedImpacts = FinanceBillAnalyzer.analyzeImpact(profile);
-    setImpacts(analyzedImpacts);
-    const draft = FinanceBillAnalyzer.generateEmailDraft(profile, analyzedImpacts);
-    const updatedDraft = {
-      ...draft,
-      to: EmailService.getDefaultRecipients()
-    };
-    setEmailDraft(updatedDraft);
+    setIsLoading(true);
+    
+    try {
+      // Use AI for dynamic analysis instead of static
+      const analyzedImpacts = await DynamicAnalyzer.analyzePersonalizedImpact(profile);
+      setImpacts(analyzedImpacts);
+      
+      // Generate AI-powered email draft
+      const draft = await DynamicAnalyzer.generateEmailDraft(profile, analyzedImpacts);
+      const updatedDraft = {
+        ...draft,
+        to: EmailService.getDefaultRecipients()
+      };
+      setEmailDraft(updatedDraft);
+      
+      toast({
+        title: "Analysis Complete",
+        description: "AI has generated your personalized impact analysis.",
+      });
+    } catch (error) {
+      console.error('AI Analysis Error:', error);
+      toast({
+        title: "Analysis Error", 
+        description: "Using fallback analysis. AI services may be temporarily unavailable.",
+        variant: "destructive",
+      });
+      
+      // Fallback to static analysis
+      const fallbackImpacts = FinanceBillAnalyzer.analyzeImpact(profile);
+      setImpacts(fallbackImpacts);
+      const fallbackDraft = FinanceBillAnalyzer.generateEmailDraft(profile, fallbackImpacts);
+      setEmailDraft({
+        ...fallbackDraft,
+        to: EmailService.getDefaultRecipients()
+      });
+    } finally {
+      setIsLoading(false);
+    }
+    
     setCurrentStep('analysis');
   };
 
@@ -311,33 +342,43 @@ How can I assist you today?`,
         
         {currentStep === 'analysis' && (
           <div className="max-w-4xl mx-auto space-y-8">
-            <ImpactDisplay impacts={impacts} />
-            
-            <div className="text-center space-y-4">
-              <Button 
-                onClick={() => setShowEmailModal(true)}
-                className="bg-kenya-red hover:bg-kenya-red/90"
-                size="lg"
-              >
-                <Send className="w-4 h-4 mr-2" />
-                Draft Impact Email
-              </Button>
-              
-              <div className="flex gap-4 justify-center">
-                <Button 
-                  variant="outline" 
-                  onClick={handleStartChat}
-                >
-                  Ask More Questions
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setCurrentStep('welcome')}
-                >
-                  Start Over
-                </Button>
+            {isLoading ? (
+              <div className="text-center space-y-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kenya-green mx-auto"></div>
+                <p className="text-lg text-gray-600">AI is analyzing your personalized impact...</p>
+                <p className="text-sm text-gray-500">Using advanced reasoning to provide detailed insights</p>
               </div>
-            </div>
+            ) : (
+              <>
+                <ImpactDisplay impacts={impacts} />
+                
+                <div className="text-center space-y-4">
+                  <Button 
+                    onClick={() => setShowEmailModal(true)}
+                    className="bg-kenya-red hover:bg-kenya-red/90"
+                    size="lg"
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Draft AI-Generated Email
+                  </Button>
+                  
+                  <div className="flex gap-4 justify-center">
+                    <Button 
+                      variant="outline" 
+                      onClick={handleStartChat}
+                    >
+                      Ask More Questions
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setCurrentStep('welcome')}
+                    >
+                      Start Over
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
         
