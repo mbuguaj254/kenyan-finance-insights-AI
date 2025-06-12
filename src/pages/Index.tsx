@@ -16,6 +16,8 @@ import { EmailService } from "@/services/emailService";
 import { Send, Scale, Info, MessageSquare, ArrowLeft, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DynamicAnalyzer } from "@/services/dynamicAnalyzer";
+import { DocumentUpload } from "@/components/DocumentUpload";
+import { EnhancedAnalyzer } from "@/services/enhancedAnalyzer";
 
 interface ChatMessage {
   id: string;
@@ -25,7 +27,7 @@ interface ChatMessage {
 }
 
 const Index = () => {
-  const [currentStep, setCurrentStep] = useState<'welcome' | 'profiling' | 'analysis' | 'chat'>('welcome');
+  const [currentStep, setCurrentStep] = useState<'welcome' | 'profiling' | 'upload' | 'analysis' | 'chat'>('welcome');
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [impacts, setImpacts] = useState<ImpactAnalysis[]>([]);
   const [emailDraft, setEmailDraft] = useState<EmailDraft | null>(null);
@@ -33,6 +35,8 @@ const Index = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [billContent, setBillContent] = useState<string>('');
+  const [clarifyingQuestions, setClarifyingQuestions] = useState<string[]>([]);
   const { toast } = useToast();
 
   // Auto-scroll to bottom when new messages are added
@@ -44,15 +48,35 @@ const Index = () => {
 
   const handleProfilingComplete = async (profile: UserProfile) => {
     setUserProfile(profile);
+    setCurrentStep('upload');
+  };
+
+  const handleDocumentProcessed = (content: string) => {
+    setBillContent(content);
+    setCurrentStep('analysis');
+    performAnalysis();
+  };
+
+  const performAnalysis = async () => {
+    if (!userProfile) return;
+    
     setIsLoading(true);
     
     try {
-      // Use AI for dynamic analysis instead of static
-      const analyzedImpacts = await DynamicAnalyzer.analyzePersonalizedImpact(profile);
+      // Import the enhanced analyzer
+      const { EnhancedAnalyzer } = await import('@/services/enhancedAnalyzer');
+      
+      // Get multi-perspective analysis
+      const analyzedImpacts = await EnhancedAnalyzer.analyzeMultiPerspective(userProfile, billContent);
       setImpacts(analyzedImpacts);
       
-      // Generate AI-powered email draft
-      const draft = await DynamicAnalyzer.generateEmailDraft(profile, analyzedImpacts);
+      // Generate clarifying questions for future use
+      const questions = await EnhancedAnalyzer.generateDetailedQuestions(userProfile);
+      setClarifyingQuestions(questions);
+      
+      // Generate AI-powered email draft using existing service
+      const { DynamicAnalyzer } = await import('@/services/dynamicAnalyzer');
+      const draft = await DynamicAnalyzer.generateEmailDraft(userProfile, analyzedImpacts);
       const updatedDraft = {
         ...draft,
         to: EmailService.getDefaultRecipients()
@@ -60,21 +84,22 @@ const Index = () => {
       setEmailDraft(updatedDraft);
       
       toast({
-        title: "Analysis Complete",
-        description: "AI has generated your personalized impact analysis.",
+        title: "Multi-Perspective Analysis Complete",
+        description: "AI has analyzed your situation from 5 different perspectives using Finance Bill content.",
       });
     } catch (error) {
-      console.error('AI Analysis Error:', error);
+      console.error('Enhanced Analysis Error:', error);
       toast({
         title: "Analysis Error", 
-        description: "Using fallback analysis. AI services may be temporarily unavailable.",
+        description: "Using fallback analysis. Enhanced AI services may be temporarily unavailable.",
         variant: "destructive",
       });
       
-      // Fallback to static analysis
-      const fallbackImpacts = FinanceBillAnalyzer.analyzeImpact(profile);
+      // Fallback to original dynamic analysis
+      const { DynamicAnalyzer } = await import('@/services/dynamicAnalyzer');
+      const fallbackImpacts = await DynamicAnalyzer.analyzePersonalizedImpact(userProfile);
       setImpacts(fallbackImpacts);
-      const fallbackDraft = FinanceBillAnalyzer.generateEmailDraft(profile, fallbackImpacts);
+      const fallbackDraft = await DynamicAnalyzer.generateEmailDraft(userProfile, fallbackImpacts);
       setEmailDraft({
         ...fallbackDraft,
         to: EmailService.getDefaultRecipients()
@@ -82,8 +107,6 @@ const Index = () => {
     } finally {
       setIsLoading(false);
     }
-    
-    setCurrentStep('analysis');
   };
 
   const handleStartChat = async () => {
@@ -235,6 +258,56 @@ How can I assist you today?`,
     </div>
   );
 
+  const renderUploadScreen = () => (
+    <div className="max-w-4xl mx-auto space-y-8">
+      <div className="text-center space-y-4">
+        <h2 className="text-3xl font-bold kenya-text-gradient">
+          Enhance Analysis with Finance Bill 2025
+        </h2>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Upload the Finance Bill 2025 PDF to get analysis based on actual bill content, 
+          or skip to continue with general analysis.
+        </p>
+      </div>
+
+      <div className="flex justify-center">
+        <DocumentUpload onDocumentProcessed={handleDocumentProcessed} />
+      </div>
+
+      <div className="text-center">
+        <Button 
+          variant="outline" 
+          onClick={performAnalysis}
+          className="mr-4"
+        >
+          Skip Upload - Use General Analysis
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={() => setCurrentStep('profiling')}
+        >
+          Back to Profiling
+        </Button>
+      </div>
+
+      {clarifyingQuestions.length > 0 && (
+        <Card className="max-w-2xl mx-auto">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold mb-3">Additional Questions for Better Analysis</h3>
+            <div className="space-y-2">
+              {clarifyingQuestions.map((question, index) => (
+                <p key={index} className="text-sm text-gray-600">• {question}</p>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-3">
+              Consider these questions to refine your profile for more accurate analysis.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+
   const renderChatInterface = () => (
     <div className="max-w-6xl mx-auto h-[calc(100vh-200px)] flex flex-col">
       <div className="flex items-center justify-between mb-4 pb-4 border-b">
@@ -340,16 +413,27 @@ How can I assist you today?`,
           </div>
         )}
         
+        {currentStep === 'upload' && renderUploadScreen()}
+        
         {currentStep === 'analysis' && (
           <div className="max-w-4xl mx-auto space-y-8">
             {isLoading ? (
               <div className="text-center space-y-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kenya-green mx-auto"></div>
-                <p className="text-lg text-gray-600">AI is analyzing your personalized impact...</p>
-                <p className="text-sm text-gray-500">Using advanced reasoning to provide detailed insights</p>
+                <p className="text-lg text-gray-600">AI is analyzing from 5 different perspectives...</p>
+                <p className="text-sm text-gray-500">Using constitutional, economic, professional, social, and strategic analysis</p>
               </div>
             ) : (
               <>
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Multi-Perspective Analysis Complete
+                  </h2>
+                  <p className="text-gray-600">
+                    Analysis from 5 different perspectives based on {billContent ? 'actual Finance Bill content' : 'comprehensive policy knowledge'}
+                  </p>
+                </div>
+                
                 <ImpactDisplay impacts={impacts} />
                 
                 <div className="text-center space-y-4">
